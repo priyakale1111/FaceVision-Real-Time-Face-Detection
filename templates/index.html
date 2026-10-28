@@ -1,0 +1,558 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FaceVision | Real-Time Face Detection</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f6fb;
+            color: #263248;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #ffffff;
+            padding: 22px 6%;
+            border-bottom: 1px solid #e5eaf2;
+        }
+
+        .brand {
+            font-size: 25px;
+            font-weight: bold;
+            color: #415f8b;
+        }
+
+        .tagline {
+            color: #738096;
+            font-size: 14px;
+            margin-top: 7px;
+        }
+
+        .container {
+            max-width: 1150px;
+            width: 92%;
+            margin: 30px auto;
+        }
+
+        .intro {
+            margin-bottom: 25px;
+        }
+
+        .intro h1 {
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
+
+        .intro p {
+            color: #778196;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 23px;
+            border-radius: 12px;
+            border: 1px solid #e8edf4;
+            box-shadow: 0 4px 14px rgba(30, 50, 80, 0.04);
+        }
+
+        .stat-label {
+            color: #7a8496;
+            font-size: 14px;
+            margin-bottom: 13px;
+        }
+
+        .stat-value {
+            font-size: 29px;
+            font-weight: bold;
+            color: #405f8e;
+        }
+
+        .dashboard {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            border: 1px solid #e8edf4;
+            box-shadow: 0 4px 14px rgba(30, 50, 80, 0.04);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 18px;
+        }
+
+        .camera-frame {
+            width: 100%;
+            min-height: 300px;
+            aspect-ratio: 16 / 9;
+            background: #202a39;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dce4f0;
+            text-align: center;
+        }
+
+        .camera-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .placeholder {
+            padding: 20px;
+            line-height: 1.8;
+            color: #dce4f0;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .primary {
+            background: #526f9c;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #3d567d;
+        }
+
+        .secondary {
+            background: #e9eef6;
+            color: #344b6b;
+        }
+
+        .secondary:hover {
+            background: #dce5f1;
+        }
+
+        .pink {
+            background: #f5e7ef;
+            color: #8b4c70;
+        }
+
+        .pink:hover {
+            background: #efd7e5;
+        }
+
+        .button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #f1f5fa;
+            color: #526176;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .system-info {
+            margin-top: 25px;
+            padding: 23px 25px;
+            background: white;
+            border: 1px solid #e8edf4;
+            border-radius: 12px;
+        }
+
+        .system-info h2 {
+            font-size: 19px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 8px;
+            margin: 11px 0;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .info-label {
+            color: #7a8496;
+        }
+
+        footer {
+            text-align: center;
+            color: #8993a3;
+            font-size: 13px;
+            padding: 25px 15px;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 20px 5%;
+            }
+
+            .container {
+                width: 94%;
+                margin: 22px auto;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 18px;
+            }
+
+            .stat-value {
+                font-size: 25px;
+            }
+
+            .dashboard {
+                padding: 16px;
+            }
+
+            .camera-frame {
+                min-height: 220px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .controls .button {
+                text-align: center;
+                width: 100%;
+            }
+
+            .intro h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="brand">FaceVision</div>
+    <p class="tagline">Real-Time Computer Vision Dashboard</p>
+</header>
+
+<main class="container">
+
+    <section class="intro">
+        <h1>Real-Time Face Detection</h1>
+        <p>Monitor face detection through your computer vision dashboard.</p>
+    </section>
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <p class="stat-label">Detected Faces</p>
+            <p class="stat-value" id="faceCount">0</p>
+        </div>
+
+        <div class="stat-card">
+            <p class="stat-label">Processing Speed</p>
+            <p class="stat-value" id="fpsValue">-- FPS</p>
+        </div>
+
+        <div class="stat-card">
+            <p class="stat-label">Camera Status</p>
+            <p class="stat-value" id="cameraStatus">Offline</p>
+        </div>
+
+    </section>
+
+    <section class="dashboard">
+
+        <h2 class="section-title">Live Camera Preview</h2>
+
+        <div class="camera-frame">
+
+            <div class="placeholder" id="placeholder">
+                <p>Camera preview will appear here</p>
+                <p>Click Start Camera to begin face detection.</p>
+            </div>
+
+            <img
+                id="videoFeed"
+                src=""
+                alt="Live face detection preview"
+            >
+
+        </div>
+
+        <div class="controls">
+
+            <button
+                type="button"
+                class="button primary"
+                id="startBtn"
+                onclick="startCamera()"
+            >
+                Start Camera
+            </button>
+
+            <button
+                type="button"
+                class="button secondary"
+                id="stopBtn"
+                onclick="stopCamera()"
+            >
+                Stop Camera
+            </button>
+
+            <button
+                type="button"
+                class="button pink"
+                id="saveBtn"
+                onclick="saveScreenshot()"
+            >
+                Save Screenshot
+            </button>
+
+            <a href="/gallery" class="button secondary">
+                View Screenshot Gallery
+            </a>
+
+        </div>
+
+        <div class="message" id="message" role="status" aria-live="polite">
+            Camera stopped.
+        </div>
+
+    </section>
+
+    <section class="system-info">
+
+        <h2>System Information</h2>
+
+        <div class="info-row">
+            <span class="info-label">Application:</span>
+            <strong>FaceVision</strong>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Detection Engine:</span>
+            <strong>Python + OpenCV</strong>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Detection Model:</span>
+            <strong>Haar Cascade</strong>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Interface:</span>
+            <strong>Flask Web Dashboard</strong>
+        </div>
+
+    </section>
+
+</main>
+
+<footer>
+    FaceVision · Real-Time Computer Vision Project
+</footer>
+
+<script>
+    const videoFeed = document.getElementById("videoFeed");
+    const placeholder = document.getElementById("placeholder");
+    const faceCount = document.getElementById("faceCount");
+    const fpsValue = document.getElementById("fpsValue");
+    const cameraStatus = document.getElementById("cameraStatus");
+    const message = document.getElementById("message");
+
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    let cameraIsRunning = false;
+    let statsTimer = null;
+
+    function showMessage(text) {
+        message.textContent = text;
+    }
+
+    async function readResponse(response) {
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+            const body = await response.text();
+            console.error("Unexpected server response:", body);
+
+            throw new Error(
+                "Server returned a non-JSON response. HTTP status: "
+                + response.status
+            );
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Request failed.");
+        }
+
+        return data;
+    }
+
+    async function startCamera() {
+        startBtn.disabled = true;
+        showMessage("Starting camera...");
+
+        try {
+            const response = await fetch("/start_camera", {
+                method: "POST"
+            });
+
+            const data = await readResponse(response);
+
+            cameraIsRunning = true;
+
+            placeholder.style.display = "none";
+            videoFeed.style.display = "block";
+            videoFeed.src = "/video_feed?t=" + Date.now();
+
+            cameraStatus.textContent = "Online";
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            saveBtn.disabled = false;
+
+            showMessage(data.message || "Camera started successfully.");
+
+            if (statsTimer) {
+                clearInterval(statsTimer);
+            }
+
+            statsTimer = setInterval(updateStats, 1000);
+            updateStats();
+
+        } catch (error) {
+            cameraIsRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = false;
+            saveBtn.disabled = true;
+            cameraStatus.textContent = "Offline";
+
+            showMessage(error.message);
+        }
+    }
+
+    async function stopCamera() {
+        showMessage("Stopping camera...");
+
+        try {
+            const response = await fetch("/stop_camera", {
+                method: "POST"
+            });
+
+            const data = await readResponse(response);
+
+            cameraIsRunning = false;
+
+            if (statsTimer) {
+                clearInterval(statsTimer);
+                statsTimer = null;
+            }
+
+            videoFeed.src = "";
+            videoFeed.style.display = "none";
+            placeholder.style.display = "block";
+
+            faceCount.textContent = "0";
+            fpsValue.textContent = "-- FPS";
+            cameraStatus.textContent = "Offline";
+
+            startBtn.disabled = false;
+            stopBtn.disabled = false;
+            saveBtn.disabled = true;
+
+            showMessage(data.message || "Camera stopped.");
+
+        } catch (error) {
+            showMessage(error.message);
+        }
+    }
+
+    async function updateStats() {
+        try {
+            const response = await fetch("/stats");
+            const data = await readResponse(response);
+
+            faceCount.textContent = data.faces ?? 0;
+            fpsValue.textContent = (data.fps ?? 0) + " FPS";
+            cameraStatus.textContent = data.camera || "Offline";
+
+        } catch (error) {
+            console.error("Stats update failed:", error);
+        }
+    }
+
+    async function saveScreenshot() {
+        if (!cameraIsRunning) {
+            showMessage("Please start the camera first.");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        showMessage("Saving screenshot...");
+
+        try {
+            const response = await fetch("/save_screenshot", {
+                method: "POST"
+            });
+
+            const data = await readResponse(response);
+
+            showMessage(data.message || "Screenshot saved successfully.");
+
+        } catch (error) {
+            showMessage(error.message);
+        } finally {
+            saveBtn.disabled = !cameraIsRunning;
+        }
+    }
+
+    stopBtn.disabled = false;
+    saveBtn.disabled = true;
+</script>
+
+</body>
+</html>
